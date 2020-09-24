@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import filesize from 'filesize';
-
 import Header from '../../components/Header';
 import FileList from '../../components/FileList';
 import Upload from '../../components/Upload';
 
-import { Container, Title, ImportFileContainer, Footer } from './styles';
+import api from '../../services/api';
 
 import alert from '../../assets/alert.svg';
-import api from '../../services/api';
+
+import { Container, Title, ImportFileContainer, Footer } from './styles';
 
 interface FileProps {
   file: File;
@@ -23,24 +22,33 @@ const Import: React.FC = () => {
   const history = useHistory();
 
   async function handleUpload(): Promise<void> {
-    // const data = new FormData();
+    const data = new FormData();
 
-    // TODO
+    uploadedFiles.forEach(uploadedFile => {
+      data.append('file', uploadedFile.file);
+    });
 
     try {
-      // await api.post('/transactions/import', data);
-    } catch (err) {
-      // console.log(err.response.error);
+      await api.post('/transactions/import', data);
+      history.push('/');
+    } catch (error) {
+      console.log(error.response.error);
     }
   }
 
   function submitFile(files: File[]): void {
-    // TODO
+    const uploadedFilesProps: FileProps[] = files.map(file => ({
+      file,
+      name: file.name,
+      readableSize: String(file.size),
+    }));
+
+    setUploadedFiles(uploadedFilesProps);
   }
 
   return (
     <>
-      <Header size="small" />
+      <Header size='small' />
       <Container>
         <Title>Importar uma transação</Title>
         <ImportFileContainer>
@@ -49,10 +57,10 @@ const Import: React.FC = () => {
 
           <Footer>
             <p>
-              <img src={alert} alt="Alert" />
+              <img src={alert} alt='Alert' />
               Permitido apenas arquivos CSV
             </p>
-            <button onClick={handleUpload} type="button">
+            <button onClick={handleUpload} type='button'>
               Enviar
             </button>
           </Footer>
